@@ -5,7 +5,7 @@
 node version 16 or above
 ```
 
-EVM wallet (recomended Metamask)
+Wallet with EIP-1193 (recommended Metamask)
 * _seed prepared for testing_
 > half clown convince lottery badge injury flight clay glimpse into one fury
 
