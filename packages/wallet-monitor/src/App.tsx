@@ -1,23 +1,13 @@
 import './App.css'
 import {Home} from "./Home";
-import { Client as Styletron } from 'styletron-engine-atomic';
-import { Provider as StyletronProvider } from 'styletron-react';
-import { LightTheme, BaseProvider } from 'baseui';
-import { WalletContextProvider } from "./context/Wallet";
-
-const engine = new Styletron();
-
+import {hasProvider} from "./context/Wallet";
+import {NoWalletWarning} from "./components/NoWalletWarning";
 function App() {
+  const isProviderAvailable = hasProvider();
 
-  return (
-    <StyletronProvider value={engine}>
-      <BaseProvider theme={LightTheme}>
-        <WalletContextProvider>
-          <Home />
-        </WalletContextProvider>
-      </BaseProvider>
-    </StyletronProvider>
-  );
+  if (!isProviderAvailable) return <NoWalletWarning />;
+
+  return <Home />;
 }
 
 export default App

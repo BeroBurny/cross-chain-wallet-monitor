@@ -1,10 +1,12 @@
-import {hasProvider} from "./context/Wallet";
-import {NoWalletWarning} from "./components/NoWalletWarning";
+import {ConnectWallet} from "./components/ConnectWallet";
+import {getWallet} from "./context/Wallet";
 
 export function Home() {
-  const isProviderAvailable = hasProvider();
+  const wallet = getWallet();
 
-  if (!isProviderAvailable) return <NoWalletWarning />;
+  if (!wallet.isConnected) return (
+    <ConnectWallet />
+  );
 
-  return <div>Hello World</div>;
+  return <div>Hello</div>
 }

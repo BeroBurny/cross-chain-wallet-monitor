@@ -1,6 +1,8 @@
 import {createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
 import {MetaMaskInpageProvider} from "@metamask/providers";
 import {KEEP_WALLET_CONNECTED_KEY} from "../constants";
+import { getChainCode } from "../utils/getChainCode";
+import { HexString } from "../types";
 
 declare global {
   interface Window {
@@ -17,6 +19,7 @@ interface WalletWithProvider {
   isConnected: boolean;
   hasProvider: true;
   accounts: string[];
+  chainId: HexString;
   provider: MetaMaskInpageProvider;
 }
 
@@ -34,6 +37,7 @@ const defaultState = !window.ethereum ? {
   isConnected: false,
   hasProvider: true,
   accounts: [],
+  chainId: "0x1",
   provider: window.ethereum,
 } as WalletWithProvider
 
@@ -44,17 +48,19 @@ export function WalletContextProvider({children}: PropsWithChildren) {
 
   const connect: WalletWithProviderAndCallbacks['connect'] = async (keep: boolean) => {
     if (!state.hasProvider) return false;
-
-    sessionStorage.setItem(KEEP_WALLET_CONNECTED_KEY, String(keep));
     try {
       const accounts = await state.provider.request<string[]>({ method: 'eth_requestAccounts' });
-      if (!accounts) return false;
+      const chainId = await getChainCode(state.provider);
+      if (!accounts || !chainId) return false;
 
+      sessionStorage.setItem(KEEP_WALLET_CONNECTED_KEY, String(keep));
       setState((prevState) => {
         if (!prevState.hasProvider) return prevState;
+
         prevState.accounts = accounts.filter(Boolean) as string[];
         prevState.isConnected = true;
-        return prevState;
+        prevState.chainId = chainId;
+        return {...prevState};
       });
     } catch (error) {
       console.log(error);
@@ -64,8 +70,9 @@ export function WalletContextProvider({children}: PropsWithChildren) {
   }
 
   useEffect(() => {
-    if (defaultState.hasProvider && Boolean(sessionStorage.getItem(KEEP_WALLET_CONNECTED_KEY)))
+    if (defaultState.hasProvider && sessionStorage.getItem(KEEP_WALLET_CONNECTED_KEY) === "true") {
       connect(true);
+    }
   }, []);
 
   // guard in case there is not provider
