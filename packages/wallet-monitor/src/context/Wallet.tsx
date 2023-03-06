@@ -1,8 +1,8 @@
-import {createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
-import {MetaMaskInpageProvider} from "@metamask/providers";
-import {KEEP_WALLET_CONNECTED_KEY} from "../constants";
-import { getChainCode } from "../utils/getChainCode";
-import { HexString } from "../types";
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { MetaMaskInpageProvider } from '@metamask/providers';
+import { KEEP_WALLET_CONNECTED_KEY } from '../constants';
+import { getChainCode } from '../utils/getChainCode';
+import { HexString } from '../types';
 
 declare global {
   interface Window {
@@ -31,25 +31,29 @@ type ContextState = WalletWithProvider | WalletWithoutProvider;
 
 type ContextType = WalletWithProviderAndCallbacks | WalletWithoutProvider;
 
-const defaultState = !window.ethereum ? {
-  hasProvider: false,
-} as WalletWithoutProvider : {
-  isConnected: false,
-  hasProvider: true,
-  accounts: [],
-  chainId: "0x1",
-  provider: window.ethereum,
-} as WalletWithProvider
+const defaultState = !window.ethereum
+  ? ({
+      hasProvider: false,
+    } as WalletWithoutProvider)
+  : ({
+      isConnected: false,
+      hasProvider: true,
+      accounts: [],
+      chainId: '0x1',
+      provider: window.ethereum,
+    } as WalletWithProvider);
 
-const WalletContext = createContext<ContextType>({hasProvider: false});
+const WalletContext = createContext<ContextType>({ hasProvider: false });
 
-export function WalletContextProvider({children}: PropsWithChildren) {
+export function WalletContextProvider({ children }: PropsWithChildren) {
   const [state, setState] = useState<ContextState>(defaultState);
 
   const connect: WalletWithProviderAndCallbacks['connect'] = async (keep: boolean) => {
     if (!state.hasProvider) return false;
     try {
-      const accounts = await state.provider.request<string[]>({ method: 'eth_requestAccounts' });
+      const accounts = await state.provider.request<string[]>({
+        method: 'eth_requestAccounts',
+      });
       const chainId = await getChainCode(state.provider);
       if (!accounts || !chainId) return false;
 
@@ -60,39 +64,39 @@ export function WalletContextProvider({children}: PropsWithChildren) {
         prevState.accounts = accounts.filter(Boolean) as string[];
         prevState.isConnected = true;
         prevState.chainId = chainId;
-        return {...prevState};
+        return { ...prevState };
       });
     } catch (error) {
       console.log(error);
       return false;
     }
     return true;
-  }
+  };
 
   useEffect(() => {
-    if (defaultState.hasProvider && sessionStorage.getItem(KEEP_WALLET_CONNECTED_KEY) === "true") {
+    if (
+      defaultState.hasProvider &&
+      sessionStorage.getItem(KEEP_WALLET_CONNECTED_KEY) === 'true'
+    ) {
       connect(true);
     }
   }, []);
 
   // guard in case there is not provider
   if (!state.hasProvider)
-    return (
-      <WalletContext.Provider value={state}>
-        {children}
-      </WalletContext.Provider>
-    );
+    return <WalletContext.Provider value={state}>{children}</WalletContext.Provider>;
 
   return (
-    <WalletContext.Provider value={{...state, connect}}>
+    <WalletContext.Provider value={{ ...state, connect }}>
       {children}
     </WalletContext.Provider>
-  )
+  );
 }
 
-export const hasProvider = () => useContext(WalletContext).hasProvider;
-export const getWallet = () => {
+export const useHasProvider = () => useContext(WalletContext).hasProvider;
+export const useWallet = () => {
   const context = useContext(WalletContext);
-  if (!context.hasProvider) throw new Error('Provider required, please install EIP-1193 compatible extension.');
+  if (!context.hasProvider)
+    throw new Error('Provider required, please install EIP-1193 compatible extension.');
   return context;
-}
+};

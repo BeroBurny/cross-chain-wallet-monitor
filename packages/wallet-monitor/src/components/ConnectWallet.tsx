@@ -1,10 +1,10 @@
-import {Button} from "baseui/button";
-import {getWallet} from "../context/Wallet";
-import {useState} from "react";
-import { Checkbox } from "baseui/checkbox";
+import { Button } from 'baseui/button';
+import { useWallet } from '../context/Wallet';
+import { useState } from 'react';
+import { Checkbox } from 'baseui/checkbox';
 
 export function ConnectWallet() {
-  const wallet = getWallet();
+  const wallet = useWallet();
 
   const [checked, setChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -13,21 +13,19 @@ export function ConnectWallet() {
     try {
       await wallet.connect(checked);
     } catch (error) {
-      console.log("error", error);
+      console.log('error', error);
     }
     setIsLoading(false);
-  }
+  };
 
   return (
     <div>
-      <Button onClick={handleConnectClick} isLoading={isLoading}>Connect</Button>
-      <Checkbox
-        checked={checked}
-        onChange={e => setChecked(e.target.checked)}
-      >
+      <Button onClick={handleConnectClick} isLoading={isLoading}>
+        Connect
+      </Button>
+      <Checkbox checked={checked} onChange={(e) => setChecked(e.target.checked)}>
         Keep Connected
       </Checkbox>
     </div>
-
   );
 }

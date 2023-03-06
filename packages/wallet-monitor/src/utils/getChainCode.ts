@@ -1,7 +1,9 @@
-import { MetaMaskInpageProvider } from "@metamask/providers";
-import { HexString } from "../types";
+import { MetaMaskInpageProvider } from '@metamask/providers';
+import { HexString } from '../types';
 
-export async function getChainCode(provider: MetaMaskInpageProvider): Promise<null | HexString> {
+export async function getChainCode(
+  provider: MetaMaskInpageProvider,
+): Promise<null | HexString> {
   // TODO: validate chainID to be hex string
   if (provider.chainId) return provider.chainId as HexString;
 
@@ -9,8 +11,8 @@ export async function getChainCode(provider: MetaMaskInpageProvider): Promise<nu
   if (!chainId) return null;
 
   // TODO: simplify logic if is possible
-  if (typeof chainId === "string") {
-    if (chainId.startsWith("0x")) return chainId as HexString;
+  if (typeof chainId === 'string') {
+    if (chainId.startsWith('0x')) return chainId as HexString;
     const idNumber = Number(chainId);
     if (isNaN(idNumber)) return null;
     return toHexNumber(idNumber);
